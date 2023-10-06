@@ -24,17 +24,20 @@ module.exports.getAllUsers = async (req, res) => {
 
 module.exports.createSession = async (req, res) => {
   const { cartValues } = req.body;
-  const line_items = cartValues.map((item) => ({
+  const line_items = cartValues?.map((item) => ({
     price: item.priceId,
     quantity: item.count,
   }));
 
-  const session = await stripe.checkout.sessions.create({
-    line_items,
-    mode: "payment",
-    success_url: `http://localhost:5173/deepdive`,
-    cancel_url: `http://localhost:5173/deepdive`,
-  });
-
-  res.redirect(303, session.url);
+  if (line_items) {
+    const session = await stripe.checkout.sessions.create({
+      line_items,
+      mode: "payment",
+      success_url: `http://localhost:5173/deepdive`,
+      cancel_url: `http://localhost:5173/deepdive`,
+    });
+    res.status(200).json({ result: session.url });
+  } else {
+    res.status(400).json({ result: "Bad Request" });
+  }
 };
