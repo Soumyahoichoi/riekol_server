@@ -9,7 +9,7 @@ module.exports.login = async (req, res) => {
     .from("Users")
     .select()
     .eq("email", email);
-  res.status(200).json({ result: data, error });
+  res.status(200).json({ result: data.length === 1, error });
 };
 
 module.exports.getAllUsers = async (req, res) => {
