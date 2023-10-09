@@ -4,7 +4,6 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 module.exports.login = async (req, res) => {
   const { email } = req.body;
 
-  console.log(req.body);
   const { data, error } = await supabase
     .from("Users")
     .select()
@@ -23,9 +22,9 @@ module.exports.getAllUsers = async (req, res) => {
 };
 
 module.exports.createSession = async (req, res) => {
-  const { cartValues } = req.body;
+  const cartValues = req.body;
   const line_items = cartValues?.map((item) => ({
-    price: item.priceId,
+    price: item.price_id,
     quantity: item.count,
   }));
 
