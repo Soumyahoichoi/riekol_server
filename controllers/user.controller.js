@@ -1,6 +1,18 @@
 const { supabase } = require("../db/dbConfig");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
+const generatePaymentIntent = async (amount) => {
+  console.log(amount);
+  return await stripe.paymentIntents.create({
+    amount: +amount,
+    currency: "inr",
+    payment_method_types: ["card"],
+    automatic_payment_methods: {
+      enabled: false,
+    },
+  });
+};
+
 module.exports.login = async (req, res) => {
   const { email } = req.body;
 
@@ -39,4 +51,9 @@ module.exports.createSession = async (req, res) => {
   } else {
     res.status(400).json({ result: "Bad Request" });
   }
+};
+
+module.exports.generateClientSecret = async (req, res) => {
+  const paymentIntent = await generatePaymentIntent(req.body.amount);
+  res.json({ result: paymentIntent.client_secret });
 };
