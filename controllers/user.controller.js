@@ -2,7 +2,6 @@ const { supabase } = require("../db/dbConfig");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const generatePaymentIntent = async (amount) => {
-  console.log(amount);
   return await stripe.paymentIntents.create({
     amount: +amount,
     currency: "inr",
@@ -54,6 +53,10 @@ module.exports.createSession = async (req, res) => {
 };
 
 module.exports.generateClientSecret = async (req, res) => {
-  const paymentIntent = await generatePaymentIntent(req.body.amount);
-  res.json({ result: paymentIntent.client_secret });
+  if (req.body.amount > 0) {
+    const paymentIntent = await generatePaymentIntent(req.body.amount);
+    res.json({ result: paymentIntent.client_secret });
+  } else {
+    res.status(400).json({ result: "Bad Request" });
+  }
 };
