@@ -11,6 +11,6 @@ var router = express.Router();
 router.post("/login", login);
 router.get("/getAllUsers", getAllUsers);
 router.post("/checkout", createSession);
-router.post("/getSecet", generateClientSecret);
+router.post("/getSecret", generateClientSecret);
 
 module.exports = router;
