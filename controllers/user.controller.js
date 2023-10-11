@@ -40,11 +40,15 @@ module.exports.createSession = async (req, res) => {
   }));
 
   if (line_items) {
+    const url =
+      process.env.NODE_ENV === "production"
+        ? "https://riekol-ui.vercel.app"
+        : "http://localhost:5173";
     const session = await stripe.checkout.sessions.create({
       line_items,
       mode: "payment",
-      success_url: `http://localhost:5173/thankyou`,
-      cancel_url: `http://localhost:5173/thankyou`,
+      success_url: `${url}/thankyou`,
+      cancel_url: `${url}/thankyou`,
     });
     res.status(200).json({ result: session.url });
   } else {
