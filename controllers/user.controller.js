@@ -43,8 +43,8 @@ module.exports.createSession = async (req, res) => {
     const session = await stripe.checkout.sessions.create({
       line_items,
       mode: "payment",
-      success_url: `http://localhost:5173/deepdive`,
-      cancel_url: `http://localhost:5173/deepdive`,
+      success_url: `http://localhost:5173/thankyou`,
+      cancel_url: `http://localhost:5173/thankyou`,
     });
     res.status(200).json({ result: session.url });
   } else {
@@ -59,4 +59,12 @@ module.exports.generateClientSecret = async (req, res) => {
   } else {
     res.status(400).json({ result: "Bad Request" });
   }
+};
+
+module.exports.getCompletePaymentInfo = async (req, res) => {
+  const paymentIntents = await stripe.paymentIntents.list({
+    limit: 100,
+  });
+
+  res.status(200).json({ result: paymentIntents });
 };
