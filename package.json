@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon app.js"
+    "start": "NODE_ENV=production nodemon app.js",
+    "dev": "NODE_ENV=development nodemon app.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.38.0",
