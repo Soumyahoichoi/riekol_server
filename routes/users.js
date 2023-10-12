@@ -17,6 +17,6 @@ router.post("/checkout", createSession);
 router.post("/getSecret", generateClientSecret);
 router.get("/getPaymentData", getCompletePaymentInfo);
 router.get("/getData", getDataFromDatabase);
-router.get("/registerUser", registerUser);
+router.post("/registerUser", registerUser);
 
 module.exports = router;
