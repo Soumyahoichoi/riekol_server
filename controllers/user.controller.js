@@ -89,15 +89,17 @@ module.exports.getDataFromDatabase = async (req, res, next) => {
 };
 
 module.exports.registerUser = async (req, res) => {
-  if (pool) {
-    const userData = req.body;
+  const { ticketDetails } = req.body;
 
-    console.log(userData);
-    // const response = await pool.query("SELECT * FROM my_eo_website_format");
-    // const responseData = response.rows;
-    // pool.end();
-    res.send("responseData");
+  if (ticketDetails) {
+    try {
+      const response = await supabase.from("purchases").insert(ticketDetails);
+      const rpc = await supabase.rpc("decrement_seats", { row_id: 1 });
+      res.status(200).json({ result: response });
+    } catch (error) {
+      res.status(500).json({ error });
+    }
   } else {
-    res.status(500).json({ result: "Please try again after sometime" });
+    res.status(400).json({ error: "Bad Request" });
   }
 };
