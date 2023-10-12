@@ -78,17 +78,12 @@ module.exports.getCompletePaymentInfo = async (req, res) => {
 
 // TO send all the data from the database
 module.exports.getDataFromDatabase = async (req, res, next) => {
-  if (pool) {
-    try {
-      const response = await pool.query("SELECT * FROM my_eo_website_format");
-      const responseData = response.rows;
-      pool.end();
-      res.send(responseData);
-    } catch (error) {
-      res.status(500).json({ error });
-    }
-  } else {
-    res.status(500).json({ result: "Please try again after sometime" });
+  try {
+    const response = await supabase.from("my_eo_website_format").select("*");
+    const responseData = response;
+    res.send(responseData);
+  } catch (error) {
+    res.status(500).json({ error });
   }
 };
 
