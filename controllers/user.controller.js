@@ -93,7 +93,9 @@ module.exports.registerUser = async (req, res) => {
   if (ticketDetails) {
     try {
       const response = await supabase.from("purchases").insert(ticketDetails);
-      const rpc = await supabase.rpc("decrement_seats", { row_id: 1 });
+      await supabase.rpc("decrement_seats", {
+        event_name: ticketDetails.map((item) => item.name),
+      });
       res.status(200).json({ result: response });
     } catch (error) {
       res.status(500).json({ error });
