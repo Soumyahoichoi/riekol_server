@@ -4,10 +4,10 @@ const { generateNewPool } = require("../db/dbConfig");
 
 const pool = generateNewPool();
 
-const generatePaymentIntent = async (amount) => {
+const generatePaymentIntent = async (amount, curency) => {
   return await stripe.paymentIntents.create({
     amount: +amount,
-    currency: "inr",
+    currency: curency,
     payment_method_types: ["card"],
     automatic_payment_methods: {
       enabled: false,
@@ -61,7 +61,10 @@ module.exports.createSession = async (req, res) => {
 
 module.exports.generateClientSecret = async (req, res) => {
   if (req.body.amount > 0) {
-    const paymentIntent = await generatePaymentIntent(req.body.amount);
+    const paymentIntent = await generatePaymentIntent(
+      req.body.amount,
+      req.body.currency
+    );
     res.json({ result: paymentIntent.client_secret });
   } else {
     res.status(400).json({ result: "Bad Request" });
