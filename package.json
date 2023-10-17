@@ -1,26 +1,28 @@
 {
-  "name": "riekol-server",
-  "version": "0.0.0",
-  "private": true,
-  "scripts": {
-    "start": "NODE_ENV=production nodemon app.js",
-    "dev": "NODE_ENV=development nodemon app.js"
-  },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.38.0",
-    "axios": "^1.5.1",
-    "cookie-parser": "~1.4.4",
-    "cors": "^2.8.5",
-    "debug": "~2.6.9",
-    "dotenv": "^16.3.1",
-    "express": "~4.16.1",
-    "http-errors": "~1.6.3",
-    "jade": "~1.11.0",
-    "morgan": "~1.9.1",
-    "pg": "^8.11.3",
-    "stripe": "^13.9.0"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.1"
-  }
+    "name": "riekol-server",
+    "version": "0.0.0",
+    "private": true,
+    "scripts": {
+        "start": "NODE_ENV=production nodemon app.js",
+        "dev": "NODE_ENV=development nodemon app.js",
+        "format": "prettier --write ."
+    },
+    "dependencies": {
+        "@supabase/supabase-js": "^2.38.0",
+        "axios": "^1.5.1",
+        "cookie-parser": "~1.4.4",
+        "cors": "^2.8.5",
+        "debug": "~2.6.9",
+        "dotenv": "^16.3.1",
+        "express": "~4.16.1",
+        "http-errors": "~1.6.3",
+        "jade": "~1.11.0",
+        "morgan": "~1.9.1",
+        "pg": "^8.11.3",
+        "prettier": "^3.0.3",
+        "stripe": "^13.9.0"
+    },
+    "devDependencies": {
+        "nodemon": "^3.0.1"
+    }
 }
