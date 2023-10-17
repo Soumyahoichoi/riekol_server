@@ -7,6 +7,8 @@ const {
   getCompletePaymentInfo,
   getDataFromDatabase,
   registerUser,
+  addItem,
+  decreaseTest,
 } = require("../controllers/user.controller");
 var router = express.Router();
 
@@ -18,5 +20,7 @@ router.post("/getSecret", generateClientSecret);
 router.get("/getPaymentData", getCompletePaymentInfo);
 router.get("/getData", getDataFromDatabase);
 router.post("/registerUser", registerUser);
+router.post("/addItem", addItem);
+router.post("/decrease", decreaseTest);
 
 module.exports = router;

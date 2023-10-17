@@ -1,11 +1,11 @@
 const { supabase } = require("../db/dbConfig");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const { generateNewPool } = require("../db/dbConfig");
+const axios = require("axios");
 
 const pool = generateNewPool();
 
 const generatePaymentIntent = async (amount, currency) => {
-  console.log(amount);
   return await stripe.paymentIntents.create({
     amount: +amount,
     currency: currency,
@@ -73,11 +73,9 @@ module.exports.generateClientSecret = async (req, res) => {
 };
 
 module.exports.getCompletePaymentInfo = async (req, res) => {
-  const paymentIntents = await stripe.paymentIntents.list({
-    limit: 100,
-  });
+  const paymentIntents = await supabase.from("purchases").select("*");
 
-  res.status(200).json({ result: paymentIntents });
+  res.send(paymentIntents?.data);
 };
 
 // TO send all the data from the database
@@ -97,9 +95,26 @@ module.exports.registerUser = async (req, res) => {
   if (ticketDetails) {
     try {
       const response = await supabase.from("purchases").insert(ticketDetails);
-      await supabase.rpc("decrement_seats", {
+      const decrement = await supabase.rpc("decrement_seats", {
         event_name: ticketDetails.map((item) => item.name),
       });
+
+      //airtable
+      // if (
+      //   response?.result?.status === 201 &&
+      //   decrement?.result?.status === 204
+      // ) {
+      //   const airtableresponse = await axios.post(
+      //     "https://api.airtable.com/v0/app5mepjhCkn9Zojw/supabase_purchase_data",
+      //     {
+      //       records: [
+      //         ...ticketDetails.map((item) => ({ fields: { ...item } })),
+      //       ],
+      //     }
+      //   );
+      //   console.log(airtableresponse);
+      // }
+
       res.status(200).json({ result: response });
     } catch (error) {
       res.status(500).json({ error });
@@ -107,4 +122,30 @@ module.exports.registerUser = async (req, res) => {
   } else {
     res.status(400).json({ error: "Bad Request" });
   }
+};
+
+module.exports.addItem = async (req, res) => {
+  const rowDetails = req.body;
+
+  if (rowDetails) {
+    try {
+      const response = await supabase
+        .from("my_eo_website_format")
+        .insert(rowDetails);
+
+      res.status(200).json({ result: response });
+    } catch (error) {
+      res.status(500).json({ error });
+    }
+  } else {
+    res.status(400).json({ error: "Bad Request" });
+  }
+};
+
+module.exports.decreaseTest = async (req, res) => {
+  res.status(200).json({
+    result: await supabase.rpc("decrement_seats", {
+      event_name: ["Test"],
+    }),
+  });
 };
