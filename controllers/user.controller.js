@@ -2,15 +2,18 @@ const { supabase } = require('../db/dbConfig');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { generateNewPool } = require('../db/dbConfig');
 const axios = require('axios');
+const _ = require('lodash');
+const { EVENTS } = require('./../helper');
 
-const generatePaymentIntent = async (amount, currency) => {
+const generatePaymentIntent = async (amount, currency, descriptor) => {
     return await stripe.paymentIntents.create({
         amount: +amount,
         currency: currency,
         payment_method_types: ['card'],
         automatic_payment_methods: {
             enabled: false
-        }
+        },
+        description: descriptor
     });
 };
 
@@ -54,7 +57,7 @@ module.exports.createSession = async (req, res) => {
 
 module.exports.generateClientSecret = async (req, res) => {
     if (req.body.amount > 0 && req.body.currency) {
-        const paymentIntent = await generatePaymentIntent(req.body.amount, req.body.currency);
+        const paymentIntent = await generatePaymentIntent(req.body.amount, req.body.currency, req.body.descriptor);
         res.json({ result: paymentIntent.client_secret });
     } else {
         res.status(400).json({ result: 'Bad Request' });
@@ -134,3 +137,28 @@ module.exports.decreaseTest = async (req, res) => {
         })
     });
 };
+
+// module.exports.stats = async (req, res) => {
+//     const { data } = await supabase.from('purchases').select('name,count,registration_fee');
+//     const filtered_arr = [];
+//     EVENTS.forEach((maj_item) => {
+//         filtered_arr.push(
+//             data.reduce(
+//                 (acc, item) => {
+//                     if (item.name === maj_item) {
+//                         const acc_copy = { ...acc };
+//                         acc_copy.name = item.name;
+//                         acc_copy.count += +item.count;
+//                         acc_copy.registration_fee = item.registration_fee;
+
+//                         return acc_copy;
+//                     }
+//                 },
+//                 { name: null, count: null, registration_fee: null }
+//             )
+//         );
+//     });
+
+//     // console.log(filtered_arr);
+//     // res.status(200).json({ result });
+// };

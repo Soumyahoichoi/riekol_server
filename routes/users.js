@@ -1,5 +1,5 @@
 const express = require('express');
-const { login, getAllUsers, createSession, generateClientSecret, getCompletePaymentInfo, getDataFromDatabase, registerUser, addItem, decreaseTest } = require('../controllers/user.controller');
+const { login, getAllUsers, createSession, generateClientSecret, getCompletePaymentInfo, getDataFromDatabase, registerUser, addItem, decreaseTest, stats } = require('../controllers/user.controller');
 var router = express.Router();
 
 /* GET users listing. */
@@ -12,5 +12,6 @@ router.get('/getData', getDataFromDatabase);
 router.post('/registerUser', registerUser);
 router.post('/addItem', addItem);
 router.post('/decrease', decreaseTest);
+// router.get('/getStats', stats);
 
 module.exports = router;
