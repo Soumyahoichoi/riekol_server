@@ -180,16 +180,18 @@ module.exports.saveTemporaryUsers = async (req, res) => {
         if(!name || !contact || !chapter || !email){
             res.status(400).json({result:"Bad Request"})
         }
-        const result = await supabase.from('payment_link').insert({
+     supabase.from('payment_link').insert({
             id: crypto?.randomUUID?.(),
             name,
             contact,
             chapter,
             email,
             amount
-        })
+        }).then(result => res.status(200).json({result})).catch(console.log)
 
-        res.status(200).json({result})
+        res.status(200).json({result:"testing"})
+
+        // res.status(200).json({result})
     }catch(err){
         res.status(500).json({result:err})
     }
