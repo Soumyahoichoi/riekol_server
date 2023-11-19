@@ -197,3 +197,13 @@ module.exports.saveTemporaryUsers = async (req, res) => {
         res.status(500).json({ result: err });
     }
 };
+
+module.exports.getMailingList = async (req, res) => {
+    try {
+        const result = await supabase.from('payment_link').select('*');
+
+        res.status(200).json({ result });
+    } catch (error) {
+        res.status(500).json({ error });
+    }
+};

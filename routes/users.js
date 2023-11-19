@@ -11,7 +11,8 @@ const {
     decreaseTest,
     stats,
     ccavenueInitiate,
-    saveTemporaryUsers
+    saveTemporaryUsers,
+    getMailingList
 } = require('../controllers/user.controller');
 var router = express.Router();
 
@@ -28,5 +29,6 @@ router.post('/decrease', decreaseTest);
 router.get('/getStats', stats);
 router.get('/initiate', ccavenueInitiate);
 router.post('/saveTemp', saveTemporaryUsers);
+router.get('/getMailingList', getMailingList);
 
 module.exports = router;
