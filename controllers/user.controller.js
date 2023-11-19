@@ -174,11 +174,12 @@ module.exports.saveTemporaryUsers = async (req, res) => {
     const {
         modalVal: { name, contact, chapter, email },
         billingAmount: amount,
-        id
+        id,
+        currency
     } = req.body;
 
     try {
-        if (!name || !contact || !chapter || !email || !id) {
+        if (!name || !contact || !chapter || !email || !id || !currency) {
             res.status(400).json({ result: 'Bad Request' });
         }
         const result = await supabase.from('payment_link').insert({
@@ -187,7 +188,8 @@ module.exports.saveTemporaryUsers = async (req, res) => {
             contact,
             chapter,
             email,
-            amount
+            amount,
+            currency
         });
 
         res.status(200).json({ result });
