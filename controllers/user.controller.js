@@ -173,27 +173,25 @@ module.exports.ccavenueInitiate = async (req, res) => {
 module.exports.saveTemporaryUsers = async (req, res) => {
     const {
         modalVal: { name, contact, chapter, email },
-        billingAmount: amount
+        billingAmount: amount,
+        id
     } = req.body;
 
-    try{
-        if(!name || !contact || !chapter || !email){
-            res.status(400).json({result:"Bad Request"})
+    try {
+        if (!name || !contact || !chapter || !email || !id) {
+            res.status(400).json({ result: 'Bad Request' });
         }
-     supabase.from('payment_link').insert({
-            id: crypto?.randomUUID?.(),
+        const result = await supabase.from('payment_link').insert({
+            id,
             name,
             contact,
             chapter,
             email,
             amount
-        }).then(result => res.status(200).json({result})).catch(console.log)
+        });
 
-        res.status(200).json({result:"testing"})
-
-        // res.status(200).json({result})
-    }catch(err){
-        res.status(500).json({result:err})
+        res.status(200).json({ result });
+    } catch (err) {
+        res.status(500).json({ result: err });
     }
- 
 };
