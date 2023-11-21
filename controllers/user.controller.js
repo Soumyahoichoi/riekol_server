@@ -4,6 +4,29 @@ const { generateNewPool } = require('../db/dbConfig');
 const axios = require('axios');
 const _ = require('lodash');
 const { EVENTS } = require('./../helper');
+const crypto = require('node:crypto');
+const querystring = require('node:querystring');
+
+function getAlgorithm(keyBase64) {
+    var key = Buffer.from(keyBase64, 'base64');
+    switch (key.length) {
+        case 16:
+            return 'aes-128-cbc';
+        case 32:
+            return 'aes-256-cbc';
+    }
+    throw new Error('Invalid key length: ' + key.length);
+}
+
+function encrypt(plainText, keyBase64, ivBase64) {
+    const key = Buffer.from(keyBase64, 'base64');
+    const iv = Buffer.from(ivBase64, 'base64');
+
+    const cipher = crypto.createCipheriv(getAlgorithm(keyBase64), key, iv);
+    let encrypted = cipher.update(plainText, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    return encrypted;
+}
 
 const generatePaymentIntent = async (amount, currency, descriptor, usDetails) => {
     if (usDetails) {
@@ -167,7 +190,98 @@ module.exports.stats = async (req, res) => {
 };
 
 module.exports.ccavenueInitiate = async (req, res) => {
-    console.log(req.body);
+    const workingKey = process.env.CCAVENUE_SECRET; //Put in the 32-Bit key shared by CCAvenues.
+    const accessCode = process.env.CCAVENUE_ACCESS_CODE; //Put in the Access Code shared by CCAvenues.
+
+    //Generate Md5 hash for the key and then convert in base64 string
+    var md5 = crypto.createHash('md5').update(workingKey).digest();
+    var keyBase64 = Buffer.from(md5).toString('base64');
+
+    //Initializing Vector and then convert in base64 string
+    var ivBase64 = Buffer.from([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f]).toString('base64');
+
+    const url = process.env.NODE_ENV === 'production' ? 'https://riekol-server.onrender.com' : 'http://localhost:1337';
+    const order_id = crypto.randomUUID();
+    const encReq = encrypt(
+        querystring.stringify({
+            merchant_id: process.env.CCAVENUE_MERCHANTID,
+            order_id,
+            currency: req.query.currency,
+            amount: +req.query.amount,
+            redirect_url: `${url}/users/payment_status`,
+            cancel_url: `${url}/users/payment_status`,
+            integration_type: 'iframe_normal',
+            language: 'EN',
+            billing_name: req.query.name,
+            billing_email: req.query.email,
+            merchant_param1: req.query.chapter,
+            billing_tel: req.query.phone
+        }),
+        keyBase64,
+        ivBase64
+    );
+    res.status(200).json({ result: { encReq, accessCode } });
+};
+
+module.exports.paymentStatus = async (req, res) => {
+    const encResp = req.body.encResp;
+
+    const workingKey = process.env.CCAVENUE_SECRET; //Put in the 32-Bit key shared by CCAvenues.
+    const accessCode = process.env.CCAVENUE_ACCESS_CODE; //Put in the Access Code shared by CCAvenues.
+
+    const md5 = crypto.createHash('md5').update(workingKey).digest();
+    const keyBase64 = Buffer.from(md5).toString('base64');
+    var ivBase64 = Buffer.from([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f]).toString('base64');
+    function decrypt(messagebase64, keyBase64, ivBase64) {
+        const key = Buffer.from(keyBase64, 'base64');
+        const iv = Buffer.from(ivBase64, 'base64');
+
+        const decipher = crypto.createDecipheriv(getAlgorithm(keyBase64), key, iv);
+        let decrypted = decipher.update(messagebase64, 'hex');
+        decrypted += decipher.final();
+        return decrypted;
+    }
+
+    //qs.parse
+    const decryptedData = decrypt(encResp, keyBase64, ivBase64);
+
+    console.log(decryptedData);
+
+    let pData = '';
+    pData = '<table border=1 cellspacing=2 cellpadding=2><tr><td>';
+    pData = pData + decryptedData.replace(/=/gi, '</td><td>');
+    pData = pData.replace(/&/gi, '</td></tr><tr><td>');
+    pData = pData + '</td></tr></table>';
+    let htmlcode =
+        '<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Response Handler</title></head><body><center><font size="4" color="blue"><b>Response Page</b></font><br>' +
+        pData +
+        '</center><br></body></html>';
+    res.writeHeader(200, { 'Content-Type': 'text/html' });
+    res.write(htmlcode);
+    res.end();
+
+    // const encryptedData = encrypt(`{"reference_no":"${decryptedData.tracking_id}","order_no":"${''}"}`, keyBase64, ivBase64);
+
+    // let ccave_payload = {
+    //     command: 'orderStatusTracker',
+    //     enc_request: encryptedData,
+    //     access_code: accessCode,
+    //     request_type: 'JSON',
+    //     response_type: 'JSON',
+    //     version: 1.2
+    // };
+
+    // try {
+    //     const response = await axios.post(`https://secure.ccavenue.com/apis/servlet/DoWebTrans?${querystring.stringify(ccave_payload)}`);
+    //     console.log(response.data);
+
+    //     const data = querystring.parse(response.data);
+    //     const dec_response = JSON.parse(decrypt(data.enc_response, keyBase64, ivBase64));
+
+    //     // console.log(dec_response);
+    // } catch (error) {
+    //     console.log('error===>', error);
+    // }
 };
 
 module.exports.saveTemporaryUsers = async (req, res) => {
