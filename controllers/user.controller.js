@@ -4,8 +4,8 @@ const { generateNewPool } = require('../db/dbConfig');
 const axios = require('axios');
 const _ = require('lodash');
 const { EVENTS, returnUrl } = require('./../helper');
-const crypto = require('node:crypto');
-const querystring = require('node:querystring');
+const crypto = require('crypto');
+const querystring = require('querystring');
 
 function getAlgorithm(keyBase64) {
     var key = Buffer.from(keyBase64, 'base64');
