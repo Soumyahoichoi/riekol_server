@@ -12,7 +12,8 @@ const {
     stats,
     ccavenueInitiate,
     saveTemporaryUsers,
-    getMailingList
+    getMailingList,
+    paymentStatus
 } = require('../controllers/user.controller');
 var router = express.Router();
 
@@ -30,5 +31,6 @@ router.get('/getStats', stats);
 router.get('/initiate', ccavenueInitiate);
 router.post('/saveTemp', saveTemporaryUsers);
 router.get('/getMailingList', getMailingList);
+router.post('/payment_status', paymentStatus);
 
 module.exports = router;

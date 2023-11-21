@@ -3,7 +3,30 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { generateNewPool } = require('../db/dbConfig');
 const axios = require('axios');
 const _ = require('lodash');
-const { EVENTS } = require('./../helper');
+const { EVENTS, returnUrl } = require('./../helper');
+const crypto = require('node:crypto');
+const querystring = require('node:querystring');
+
+function getAlgorithm(keyBase64) {
+    var key = Buffer.from(keyBase64, 'base64');
+    switch (key.length) {
+        case 16:
+            return 'aes-128-cbc';
+        case 32:
+            return 'aes-256-cbc';
+    }
+    throw new Error('Invalid key length: ' + key.length);
+}
+
+function encrypt(plainText, keyBase64, ivBase64) {
+    const key = Buffer.from(keyBase64, 'base64');
+    const iv = Buffer.from(ivBase64, 'base64');
+
+    const cipher = crypto.createCipheriv(getAlgorithm(keyBase64), key, iv);
+    let encrypted = cipher.update(plainText, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    return encrypted;
+}
 
 const generatePaymentIntent = async (amount, currency, descriptor, usDetails) => {
     if (usDetails) {
@@ -167,7 +190,64 @@ module.exports.stats = async (req, res) => {
 };
 
 module.exports.ccavenueInitiate = async (req, res) => {
-    console.log(req.body);
+    const workingKey = process.env.CCAVENUE_SECRET; //Put in the 32-Bit key shared by CCAvenues.
+    const accessCode = process.env.CCAVENUE_ACCESS_CODE; //Put in the Access Code shared by CCAvenues.
+
+    //Generate Md5 hash for the key and then convert in base64 string
+    var md5 = crypto.createHash('md5').update(workingKey).digest();
+    var keyBase64 = Buffer.from(md5).toString('base64');
+
+    //Initializing Vector and then convert in base64 string
+    var ivBase64 = Buffer.from([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f]).toString('base64');
+
+    const url = process.env.NODE_ENV === 'production' ? 'https://riekol-server.onrender.com' : 'http://localhost:1337';
+    const order_id = crypto.randomUUID();
+    const encReq = encrypt(
+        querystring.stringify({
+            merchant_id: process.env.CCAVENUE_MERCHANTID,
+            order_id,
+            currency: req.query.currency,
+            amount: +req.query.amount,
+            redirect_url: `${url}/users/payment_status`,
+            cancel_url: `${url}/users/payment_status`,
+            integration_type: 'iframe_normal',
+            language: 'EN',
+            billing_name: req.query.name,
+            billing_email: req.query.email,
+            merchant_param1: req.query.chapter,
+            billing_tel: req.query.phone
+        }),
+        keyBase64,
+        ivBase64
+    );
+    res.status(200).json({ result: { encReq, accessCode } });
+};
+
+module.exports.paymentStatus = async (req, res) => {
+    const encResp = req.body.encResp;
+
+    const workingKey = process.env.CCAVENUE_SECRET; //Put in the 32-Bit key shared by CCAvenues.
+    const accessCode = process.env.CCAVENUE_ACCESS_CODE; //Put in the Access Code shared by CCAvenues.
+
+    const md5 = crypto.createHash('md5').update(workingKey).digest();
+    const keyBase64 = Buffer.from(md5).toString('base64');
+    var ivBase64 = Buffer.from([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f]).toString('base64');
+    function decrypt(messagebase64, keyBase64, ivBase64) {
+        const key = Buffer.from(keyBase64, 'base64');
+        const iv = Buffer.from(ivBase64, 'base64');
+
+        const decipher = crypto.createDecipheriv(getAlgorithm(keyBase64), key, iv);
+        let decrypted = decipher.update(messagebase64, 'hex');
+        decrypted += decipher.final();
+        return decrypted;
+    }
+
+    const decryptedData = decrypt(encResp, keyBase64, ivBase64);
+    const parsedData = querystring.parse(decryptedData);
+
+    const fronend_url = `${returnUrl()}/thankyou?status=${parsedData.order_status}&email=${parsedData.billing_email}&name=${parsedData.billing_name}`;
+
+    res.redirect(302, fronend_url);
 };
 
 module.exports.saveTemporaryUsers = async (req, res) => {
