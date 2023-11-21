@@ -243,12 +243,9 @@ module.exports.paymentStatus = async (req, res) => {
     }
 
     const decryptedData = decrypt(encResp, keyBase64, ivBase64);
+    const parsedData = querystring.parse(decryptedData);
 
-    const order_status = querystring.parse(decryptedData).order_status;
-
-    console.log(order_status);
-
-    const fronend_url = `${returnUrl()}/thankyou?status=${order_status}`;
+    const fronend_url = `${returnUrl()}/thankyou?status=${parsedData.order_status}&email=${parsedData.billing_email}&name=${parsedData.billing_name}`;
 
     res.redirect(302, fronend_url);
 };
