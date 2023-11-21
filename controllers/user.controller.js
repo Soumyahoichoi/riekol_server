@@ -3,7 +3,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { generateNewPool } = require('../db/dbConfig');
 const axios = require('axios');
 const _ = require('lodash');
-const { EVENTS } = require('./../helper');
+const { EVENTS, returnUrl } = require('./../helper');
 const crypto = require('node:crypto');
 const querystring = require('node:querystring');
 
@@ -242,46 +242,15 @@ module.exports.paymentStatus = async (req, res) => {
         return decrypted;
     }
 
-    //qs.parse
     const decryptedData = decrypt(encResp, keyBase64, ivBase64);
 
-    console.log(decryptedData);
+    const order_status = querystring.parse(decryptedData).order_status;
 
-    let pData = '';
-    pData = '<table border=1 cellspacing=2 cellpadding=2><tr><td>';
-    pData = pData + decryptedData.replace(/=/gi, '</td><td>');
-    pData = pData.replace(/&/gi, '</td></tr><tr><td>');
-    pData = pData + '</td></tr></table>';
-    let htmlcode =
-        '<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Response Handler</title></head><body><center><font size="4" color="blue"><b>Response Page</b></font><br>' +
-        pData +
-        '</center><br></body></html>';
-    res.writeHeader(200, { 'Content-Type': 'text/html' });
-    res.write(htmlcode);
-    res.end();
+    console.log(order_status);
 
-    // const encryptedData = encrypt(`{"reference_no":"${decryptedData.tracking_id}","order_no":"${''}"}`, keyBase64, ivBase64);
+    const fronend_url = `${returnUrl()}/thankyou?status=${order_status}`;
 
-    // let ccave_payload = {
-    //     command: 'orderStatusTracker',
-    //     enc_request: encryptedData,
-    //     access_code: accessCode,
-    //     request_type: 'JSON',
-    //     response_type: 'JSON',
-    //     version: 1.2
-    // };
-
-    // try {
-    //     const response = await axios.post(`https://secure.ccavenue.com/apis/servlet/DoWebTrans?${querystring.stringify(ccave_payload)}`);
-    //     console.log(response.data);
-
-    //     const data = querystring.parse(response.data);
-    //     const dec_response = JSON.parse(decrypt(data.enc_response, keyBase64, ivBase64));
-
-    //     // console.log(dec_response);
-    // } catch (error) {
-    //     console.log('error===>', error);
-    // }
+    res.redirect(302, fronend_url);
 };
 
 module.exports.saveTemporaryUsers = async (req, res) => {
