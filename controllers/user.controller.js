@@ -3,9 +3,11 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { generateNewPool } = require('../db/dbConfig');
 const axios = require('axios');
 const _ = require('lodash');
-const { EVENTS, returnUrl } = require('./../helper');
+const { EVENTS, returnUrl, transporter } = require('./../helper');
 const crypto = require('crypto');
 const querystring = require('querystring');
+const fs = require('fs');
+const path = require('path');
 
 function getAlgorithm(keyBase64) {
     var key = Buffer.from(keyBase64, 'base64');
@@ -131,28 +133,40 @@ module.exports.registerUser = async (req, res) => {
 
     if (ticketDetails) {
         try {
-            const response = await supabase.from('purchases').insert(ticketDetails);
-            const decrement = await supabase.rpc('decrement_seats', {
-                event_name: ticketDetails.map((item) => item.name)
-            });
-            //airtable
-            if (response?.status === 201 && decrement?.status === 204) {
-                await axios.post(
-                    'https://api.airtable.com/v0/app5mepjhCkn9Zojw/supabase_purchase_data',
-                    {
-                        records: [...ticketDetails.map((item) => ({ fields: { ...item } }))]
-                    },
-                    {
-                        headers: {
-                            Authorization: `Bearer patJLEWwnFANu0Mwv.c98aeb79f2e55e6aba4cda25e2411c379679db2e9df7dee3c816e7534ddd7a21`
-                        }
-                    }
-                );
-            }
+            // const response = await supabase.from('purchases').insert(ticketDetails);
+            // const decrement = await supabase.rpc('decrement_seats', {
+            //     event_name: ticketDetails.map((item) => item.name)
+            // });
+            // // airtable;
+            // if (response?.status === 201 && decrement?.status === 204) {
+            //     await axios.post(
+            //         'https://api.airtable.com/v0/app5mepjhCkn9Zojw/supabase_purchase_data',
+            //         {
+            //             records: [...ticketDetails.map((item) => ({ fields: { ...item } }))]
+            //         },
+            //         {
+            //             headers: {
+            //                 Authorization: `Bearer patJLEWwnFANu0Mwv.c98aeb79f2e55e6aba4cda25e2411c379679db2e9df7dee3c816e7534ddd7a21`
+            //             }
+            //         }
+            //     );
 
-            res.status(200).json({ ok: true, message: 'User registered successfully' });
+            // }
+
+            const message = await transporter.sendMail({
+                from: 'info@riekol.com', // sender address
+                to: `${ticketDetails[0].email}`, // list of receivers
+                subject: 'Invoice from RIEKOL', // Subject line
+                text: fs.readFileSync(path.resolve(__dirname + '/../views/email.html'), 'utf-8')
+            });
+            /**
+ *  // <h1>
+                // Hello ${ticketDetails[0].name} you just booked tickets for ${ticketDetails.map((item) => item.name).join(',
+ */
+            // msgid: message
+            res.status(200).json({ ok: true, message: 'User registered successfully', msgid: message });
         } catch (error) {
-            res.status(500).json({ error });
+            res.status(500).json({ error: error.stack });
         }
     } else {
         res.status(400).json({ error: 'Bad Request' });
