@@ -152,14 +152,14 @@ module.exports.registerUser = async (req, res) => {
                 );
             }
 
-            const message = await transporter.sendMail({
-                from: 'info@riekol.com', // sender address
-                to: `${ticketDetails[0].email}`, // list of receivers
-                subject: 'Invoice from RIEKOL', // Subject line
-                text: fs.readFileSync(path.resolve(__dirname + '/../views/email.html'), 'utf-8')
-            });
+            // const message = await transporter.sendMail({
+            //     from: 'info@riekol.com', // sender address
+            //     to: `${ticketDetails[0].email}`, // list of receivers
+            //     subject: 'Invoice from RIEKOL', // Subject line
+            //     text: fs.readFileSync(path.resolve(__dirname + '/../views/email.html'), 'utf-8')
+            // });
 
-            res.status(200).json({ ok: true, message: 'User registered successfully', msgid: message });
+            res.status(200).json({ ok: true, message: 'User registered successfully' });
         } catch (error) {
             res.status(500).json({ error: error.stack });
         }
