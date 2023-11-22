@@ -1,3 +1,5 @@
+const nodemailer = require('nodemailer');
+
 module.exports.returnUrl = () => {
     if (process.env.NODE_ENV === 'production') {
         return 'https://riekol-ui.vercel.app';
@@ -32,3 +34,13 @@ module.exports.EVENTS = [
 
     'MyEO Ganga Aarti with Shikara ride'
 ];
+
+module.exports.transporter = nodemailer.createTransport({
+    host: 'smtp-relay.brevo.com',
+    port: 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+        user: 'info@riekol.com', // generated brevo user
+        pass: 'xsmtpsib-7230c6492975cbdc72c438bc69c4ac6cbb7cb6d3d5111558e5aa3a7639998951-2f65sACjzQVRyEWP' // generated brevo password
+    }
+});
