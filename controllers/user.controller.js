@@ -150,14 +150,14 @@ module.exports.registerUser = async (req, res) => {
                         }
                     }
                 );
-
-                await transporter.sendMail({
-                    from: 'info@riekol.com', // sender address
-                    to: `${ticketDetails[0].email}`, // list of receivers
-                    subject: 'Invoice from RIEKOL', // Subject line
-                    text: fs.readFileSync(path.resolve(__dirname + '/../views/email.html'), 'utf-8')
-                });
             }
+
+            const message = await transporter.sendMail({
+                from: 'info@riekol.com', // sender address
+                to: `${ticketDetails[0].email}`, // list of receivers
+                subject: 'Invoice from RIEKOL', // Subject line
+                text: fs.readFileSync(path.resolve(__dirname + '/../views/email.html'), 'utf-8')
+            });
 
             res.status(200).json({ ok: true, message: 'User registered successfully', msgid: message });
         } catch (error) {
