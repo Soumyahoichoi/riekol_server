@@ -139,7 +139,7 @@ module.exports.registerUser = async (req, res) => {
             });
             // airtable;
             if (response?.status === 201 && decrement?.status === 204) {
-                await axios.post(
+                const airtableResponse = await axios.post(
                     'https://api.airtable.com/v0/app5mepjhCkn9Zojw/supabase_purchase_data',
                     {
                         records: [...ticketDetails.map((item) => ({ fields: { ...item } }))]
@@ -150,16 +150,21 @@ module.exports.registerUser = async (req, res) => {
                         }
                     }
                 );
+                if ('records' in airtableResponse.data) {
+                    const message = await transporter.sendMail({
+                        from: 'info@riekol.com', // sender address
+                        to: `${ticketDetails[0].email}`, // list of receivers
+                        subject: 'Invoice from RIEKOL', // Subject line
+                        text: fs.readFileSync(path.resolve(__dirname + '/../views/email.html'), 'utf-8')
+                    });
+
+                    if (message) {
+                        res.status(200).json({ ok: true, message: 'User registered successfully', context: message });
+                    } else {
+                        res.status(500).json({ ok: false, message: 'Something went wrong', context: message });
+                    }
+                }
             }
-
-            // const message = await transporter.sendMail({
-            //     from: 'info@riekol.com', // sender address
-            //     to: `${ticketDetails[0].email}`, // list of receivers
-            //     subject: 'Invoice from RIEKOL', // Subject line
-            //     text: fs.readFileSync(path.resolve(__dirname + '/../views/email.html'), 'utf-8')
-            // });
-
-            res.status(200).json({ ok: true, message: 'User registered successfully' });
         } catch (error) {
             res.status(500).json({ error: error.stack });
         }

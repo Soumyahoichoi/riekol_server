@@ -41,6 +41,6 @@ module.exports.transporter = nodemailer.createTransport({
     secure: false, // true for 465, false for other ports
     auth: {
         user: 'info@riekol.com', // generated brevo user
-        pass: 'xsmtpsib-7230c6492975cbdc72c438bc69c4ac6cbb7cb6d3d5111558e5aa3a7639998951-rEdUxabwkLz7g91K' // generated brevo password
+        pass: process.env.BREVO_PASSWORD
     }
 });
