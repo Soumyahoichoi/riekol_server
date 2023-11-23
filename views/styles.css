@@ -1,0 +1,276 @@
+#outlook a {
+    padding: 0;
+}
+.ExternalClass {
+    width: 100%;
+}
+.ExternalClass,
+.ExternalClass p,
+.ExternalClass span,
+.ExternalClass font,
+.ExternalClass td,
+.ExternalClass div {
+    line-height: 100%;
+}
+table td {
+    border-collapse: collapse;
+    mso-line-height-rule: exactly;
+}
+.editable.image {
+    font-size: 0 !important;
+    line-height: 0 !important;
+}
+.nl2go_preheader {
+    display: none !important;
+    mso-hide: all !important;
+    mso-line-height-rule: exactly;
+    visibility: hidden !important;
+    line-height: 0px !important;
+    font-size: 0px !important;
+}
+body {
+    width: 100% !important;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    margin: 0;
+    padding: 0;
+}
+img {
+    outline: none;
+    text-decoration: none;
+    -ms-interpolation-mode: bicubic;
+}
+a img {
+    border: none;
+}
+table {
+    border-collapse: collapse;
+    mso-table-lspace: 0pt;
+    mso-table-rspace: 0pt;
+}
+th {
+    font-weight: normal;
+    text-align: left;
+}
+*[class='gmail-fix'] {
+    display: none !important;
+}
+a:link {
+    color: #696969;
+    text-decoration: underline;
+}
+@media (max-width: 600px) {
+    .gmx-killpill {
+        content: ' \03D1';
+    }
+}
+@media (max-width: 600px) {
+    .gmx-killpill {
+        content: ' \03D1';
+    }
+    .r0-o {
+        border-style: solid !important;
+        margin: 0 auto 0 auto !important;
+        width: 320px !important;
+    }
+    .r1-i {
+        background-color: #ffffff !important;
+    }
+    .r2-c {
+        box-sizing: border-box !important;
+        text-align: center !important;
+        valign: top !important;
+        width: 100% !important;
+    }
+    .r3-o {
+        border-style: solid !important;
+        margin: 0 auto 0 auto !important;
+        width: 100% !important;
+    }
+    .r4-i {
+        padding-bottom: 20px !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+        padding-top: 20px !important;
+    }
+    .r5-c {
+        box-sizing: border-box !important;
+        display: block !important;
+        valign: top !important;
+        width: 100% !important;
+    }
+    .r6-o {
+        border-style: solid !important;
+        width: 100% !important;
+    }
+    .r7-i {
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+    }
+    .r8-i {
+        padding-bottom: 15px !important;
+        padding-top: 15px !important;
+    }
+    .r9-c {
+        box-sizing: border-box !important;
+        text-align: left !important;
+        valign: top !important;
+        width: 100% !important;
+    }
+    .r10-o {
+        border-style: solid !important;
+        margin: 0 auto 0 0 !important;
+        width: 100% !important;
+    }
+    .r11-i {
+        padding-top: 15px !important;
+        text-align: center !important;
+    }
+    .r12-i {
+        background-color: #eff2f7 !important;
+        padding-bottom: 20px !important;
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+        padding-top: 20px !important;
+    }
+    .r13-i {
+        color: #3b3f44 !important;
+        padding-bottom: 0px !important;
+        padding-top: 15px !important;
+        text-align: center !important;
+    }
+    .r14-i {
+        color: #3b3f44 !important;
+        padding-bottom: 0px !important;
+        padding-top: 0px !important;
+        text-align: center !important;
+    }
+    .r15-i {
+        color: #3b3f44 !important;
+        padding-bottom: 15px !important;
+        padding-top: 15px !important;
+        text-align: center !important;
+    }
+    .r16-c {
+        box-sizing: border-box !important;
+        text-align: center !important;
+        width: 100% !important;
+    }
+    .r17-i {
+        padding-bottom: 15px !important;
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+        padding-top: 0px !important;
+    }
+    .r18-c {
+        box-sizing: border-box !important;
+        text-align: center !important;
+        valign: top !important;
+        width: 129px !important;
+    }
+    .r19-o {
+        border-style: solid !important;
+        margin: 0 auto 0 auto !important;
+        width: 129px !important;
+    }
+    body {
+        -webkit-text-size-adjust: none;
+    }
+    .nl2go-responsive-hide {
+        display: none;
+    }
+    .nl2go-body-table {
+        min-width: unset !important;
+    }
+    .mobshow {
+        height: auto !important;
+        overflow: visible !important;
+        max-height: unset !important;
+        visibility: visible !important;
+        border: none !important;
+    }
+    .resp-table {
+        display: inline-table !important;
+    }
+    .magic-resp {
+        display: table-cell !important;
+    }
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+ol,
+ul {
+    margin: 0;
+}
+a,
+a:link {
+    color: #696969;
+    text-decoration: underline;
+}
+.nl2go-default-textstyle {
+    color: #3b3f44;
+    font-family: arial, helvetica, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    word-break: break-word;
+}
+.default-button {
+    color: #ffffff;
+    font-family: arial, helvetica, sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: bold;
+    line-height: 1.15;
+    text-decoration: none;
+    word-break: break-word;
+}
+.default-heading1 {
+    color: #1f2d3d;
+    font-family: arial, helvetica, sans-serif;
+    font-size: 36px;
+    word-break: break-word;
+}
+.default-heading2 {
+    color: #1f2d3d;
+    font-family: arial, helvetica, sans-serif;
+    font-size: 32px;
+    word-break: break-word;
+}
+.default-heading3 {
+    color: #1f2d3d;
+    font-family: arial, helvetica, sans-serif;
+    font-size: 24px;
+    word-break: break-word;
+}
+.default-heading4 {
+    color: #1f2d3d;
+    font-family: arial, helvetica, sans-serif;
+    font-size: 18px;
+    word-break: break-word;
+}
+a[x-apple-data-detectors] {
+    color: inherit !important;
+    text-decoration: inherit !important;
+    font-size: inherit !important;
+    font-family: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+}
+.no-show-for-you {
+    border: none;
+    display: none;
+    float: none;
+    font-size: 0;
+    height: 0;
+    line-height: 0;
+    max-height: 0;
+    mso-hide: all;
+    overflow: hidden;
+    table-layout: fixed;
+    visibility: hidden;
+    width: 0;
+}
