@@ -15,6 +15,6 @@ const Layout = require('./layout');
         ))}
     </ul>
     <h2>
-        Your total :<span>{ticketDetails.reduce((acc, item) => acc + +item.registration_fee, 0)}</span>
+        Your total :<span>{ticketDetails.reduce((acc, item) => acc + +item.registration_fee.split(',').join(''), 0)}</span>
     </h2>
 </Layout>;
