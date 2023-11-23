@@ -8,6 +8,7 @@ const crypto = require('crypto');
 const querystring = require('querystring');
 const fs = require('fs');
 const path = require('path');
+const engine = require('express-engine-jsx');
 
 function getAlgorithm(keyBase64) {
     var key = Buffer.from(keyBase64, 'base64');
@@ -155,7 +156,7 @@ module.exports.registerUser = async (req, res) => {
                         from: 'info@riekol.com', // sender address
                         to: `${ticketDetails[0].email}`, // list of receivers
                         subject: 'Invoice from RIEKOL', // Subject line
-                        text: fs.readFileSync(path.resolve(__dirname + '/../views/email.html'), 'utf-8')
+                        html: engine(path.resolve(__dirname + '/../views/example.jsx'), { ticketDetails }).toString()
                     });
 
                     if (message) {

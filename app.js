@@ -4,6 +4,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
+const engine = require('express-engine-jsx');
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
@@ -13,6 +14,10 @@ require('dotenv').config();
 const app = express();
 
 // view engine setup
+app.set('views', './views');
+app.set('view engine', 'jsx');
+app.engine('jsx', engine);
+
 app.use(cors());
 // app.use(logger('dev'));
 app.use(express.json());
