@@ -151,20 +151,20 @@ module.exports.registerUser = async (req, res) => {
                         }
                     }
                 );
-                if ('records' in airtableResponse.data) {
-                    const message = await transporter.sendMail({
-                        from: 'info@riekol.com', // sender address
-                        to: `${ticketDetails[0].email}`, // list of receivers
-                        subject: 'Invoice from RIEKOL', // Subject line
-                        html: engine(path.resolve(__dirname + '/../views/example.jsx'), { ticketDetails }).toString()
-                    });
+                // if ('records' in airtableResponse.data) {
+                //     const message = await transporter.sendMail({
+                //         from: 'info@riekol.com', // sender address
+                //         to: `${ticketDetails[0].email}`, // list of receivers
+                //         subject: 'Invoice from RIEKOL', // Subject line
+                //         html: engine(path.resolve(__dirname + '/../views/example.jsx'), { ticketDetails }).toString()
+                //     });
 
-                    if (message) {
-                        res.status(200).json({ ok: true, message: 'User registered successfully', context: message });
-                    } else {
-                        res.status(500).json({ ok: false, message: 'Something went wrong', context: message });
-                    }
-                }
+                //     if (message) {
+                //         res.status(200).json({ ok: true, message: 'User registered successfully', context: message });
+                //     } else {
+                //         res.status(500).json({ ok: false, message: 'Something went wrong', context: message });
+                //     }
+                // }
             }
         } catch (error) {
             res.status(500).json({ error: error.stack });
