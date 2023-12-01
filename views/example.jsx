@@ -1,20 +1,20 @@
 const Layout = require('./layout');
 
 <Layout>
-    <h2>Dear {ticketDetails[0].customer_name.toUpperCase()}</h2>
-    <h3>Your Ticket Details : </h3>
+    <h4>Dear {ticketDetails[0].customer_name.toUpperCase()}</h4>
+    <h4>Your Ticket Details : </h4>
     <hr />
     <br />
     <ul class="users">
         {ticketDetails.map((ticket) => (
             <li key={ticket}>
-                <strong style={{ color: 'red' }}>
-                    {ticket.name} - {ticket.registration_fee} x {ticket.count}
-                </strong>
+                {/* <strong> */}
+                {ticket.name} - {ticket.registration_fee} x {ticket.count}
+                {/* </strong> */}
             </li>
         ))}
     </ul>
-    <h2>
+    <h4>
         Your total :<span>{ticketDetails.reduce((acc, item) => acc + +item.registration_fee.split(',').join('') * +item.count, 0)}</span>
-    </h2>
+    </h4>
 </Layout>;

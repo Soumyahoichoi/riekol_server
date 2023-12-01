@@ -113,15 +113,8 @@
                                                                                                                                 margin: 0
                                                                                                                             }}
                                                                                                                         >
-                                                                                                                            <span
-                                                                                                                                style={{
-                                                                                                                                    fontSize: 32
-                                                                                                                                }}
-                                                                                                                            >
-                                                                                                                                Your tickets are booked successfully!
-                                                                                                                            </span>
+                                                                                                                            <h3>Your MyEo tickets are booked successfully!</h3>
                                                                                                                         </p>{' '}
-                                                                                                                        <h2>Ticket Details:</h2>
                                                                                                                         {children}
                                                                                                                     </div>
                                                                                                                 </td>
@@ -219,7 +212,7 @@
                                                                                                                                 margin: 0
                                                                                                                             }}
                                                                                                                         >
-                                                                                                                            <strong>RIE-KOL</strong>
+                                                                                                                            <strong>EO KOLKATA</strong>
                                                                                                                         </p>
                                                                                                                     </div>
                                                                                                                 </td>

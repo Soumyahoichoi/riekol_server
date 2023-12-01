@@ -13,7 +13,8 @@ const {
     ccavenueInitiate,
     saveTemporaryUsers,
     getMailingList,
-    paymentStatus
+    paymentStatus,
+    sendSequentialMail
 } = require('../controllers/user.controller');
 var router = express.Router();
 
@@ -32,5 +33,6 @@ router.get('/initiate', ccavenueInitiate);
 router.post('/saveTemp', saveTemporaryUsers);
 router.get('/getMailingList', getMailingList);
 router.post('/payment_status', paymentStatus);
+router.post('/sendMailManual', sendSequentialMail);
 
 module.exports = router;
