@@ -9,12 +9,12 @@ const Layout = require('./layout');
         {ticketDetails.map((ticket) => (
             <li key={ticket}>
                 <strong style={{ color: 'red' }}>
-                    {ticket.name} - {ticket.registration_fee}
+                    {ticket.name} - {ticket.registration_fee} x {ticket.count}
                 </strong>
             </li>
         ))}
     </ul>
     <h2>
-        Your total :<span>{ticketDetails.reduce((acc, item) => acc + +item.registration_fee.split(',').join(''), 0)}</span>
+        Your total :<span>{ticketDetails.reduce((acc, item) => acc + +item.registration_fee.split(',').join('') * +item.count, 0)}</span>
     </h2>
 </Layout>;
