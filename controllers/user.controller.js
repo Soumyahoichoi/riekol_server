@@ -302,3 +302,39 @@ module.exports.getMailingList = async (req, res) => {
         res.status(500).json({ error });
     }
 };
+
+module.exports.sendSequentialMail = async (req, res) => {
+    const json = [
+        {
+            name: 'MyEO Ganga Aarti with Shikara ride',
+            start_time: '2:00 PM',
+            end_time: '6:30 PM',
+            registration_fee: '3,000',
+            order_id: '853944cb-6331-44b1-9818-c635992b0ee9',
+            count: 2,
+            email: 'mitul1719@gmail.com',
+            price_id: 'ff5060a9-980d-4768-99f8-16febf836074',
+            created: '08:01:07 GMT+0800 (Singapore Standard Time)',
+            event_date: '11-Jan - 11-Jan',
+            calc: 2,
+            'Last Modified Time': '11/30/2023 12:01am',
+            customer_name: 'Suraj Jaising'
+        }
+        //keep mails in this shape
+    ];
+    try {
+        const funcArr = json.map((item) =>
+            transporter.sendMail({
+                from: 'info@riekol.com', // sender address
+                to: `${item.email}`, // list of receivers
+                subject: 'Invoice from RIEKOL', // Subject line
+                html: engine(path.resolve(__dirname + '/../views/example.jsx'), { ticketDetails: [item] }).toString()
+            })
+        );
+
+        console.log(await Promise.all(funcArr));
+        res.status(200).json({ result: true });
+    } catch (error) {
+        res.status(500).json({ result: false });
+    }
+};
