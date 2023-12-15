@@ -9,6 +9,11 @@ const querystring = require('querystring');
 const fs = require('fs');
 const path = require('path');
 const engine = require('express-engine-jsx');
+const { createClient } = require('redis');
+const client = createClient({ url: process.env.NODE_ENV === 'production' ? process.env.REDIS_URL : process.env.EXT_REDIS_URL });
+
+client.on('error', (err) => console.log('Redis Client Error', err));
+client.connect().then(() => console.log('Redis Connected'));
 
 function getAlgorithm(keyBase64) {
     var key = Buffer.from(keyBase64, 'base64');
@@ -130,16 +135,34 @@ module.exports.getDataFromDatabase = async (req, res, next) => {
 };
 
 module.exports.registerUser = async (req, res) => {
-    const { ticketDetails } = req.body;
-
-    if (ticketDetails) {
+    const requestBody = structuredClone?.(req.body) || JSON.parse(JSON.stingify(req.body) || '{}');
+    if (requestBody?.ticketDetails) {
+        const { ticketDetails, frontend_url, cartId } = requestBody;
         try {
             const response = await supabase.from('purchases').insert(ticketDetails);
-            const decrement = await supabase.rpc('decrement_seats', {
-                event_name: ticketDetails.map((item) => item.name)
-            });
+            // const decrement = await supabase.rpc('decrement_seats', {
+            //     event_name: ticketDetails.map((item) => item.name)
+            // });
+
+            const decrement = [];
+            const ticketNames = ticketDetails
+                .map((item) => {
+                    const arr = [];
+                    for (let i = 1; i <= item.count; i++) {
+                        arr.push(item.name);
+                    }
+                    return arr;
+                })
+                .flat();
+            for (const i of ticketNames) {
+                const status_Decr = await supabase.rpc('decrement_seats', {
+                    event_name: [i]
+                });
+                decrement.push(status_Decr.status);
+            }
             // airtable;
-            if (response?.status === 201 && decrement?.status === 204) {
+            if (response?.status === 201 && decrement?.every((item) => item === 204)) {
+                console.log('done supabase');
                 const airtableResponse = await axios.post(
                     'https://api.airtable.com/v0/app5mepjhCkn9Zojw/supabase_purchase_data',
                     {
@@ -152,15 +175,27 @@ module.exports.registerUser = async (req, res) => {
                     }
                 );
                 if ('records' in airtableResponse.data) {
+                    console.log('done airtable');
+
                     const message = await transporter.sendMail({
                         from: 'info@riekol.com', // sender address
                         to: `${ticketDetails[0].email}`, // list of receivers
                         subject: 'Invoice from RIEKOL', // Subject line
                         html: engine(path.resolve(__dirname + '/../views/example.jsx'), { ticketDetails }).toString()
                     });
-
                     if (message) {
-                        res.status(200).json({ ok: true, message: 'User registered successfully', context: message });
+                        console.log('done mail');
+                        try {
+                            const redis_deleted_entry = await client.del([cartId]);
+                            console.log('redis entry deleted', redis_deleted_entry);
+                        } catch (error) {
+                            console.log('in error of mail catch');
+                            console.log(error);
+                        }
+                        // const fronend_url = `${returnUrl()}/thankyou`;
+                        console.log('fronend url ===> ', frontend_url);
+                        res.redirect(302, frontend_url);
+                        // res.status(200).json({ ok: true, message: 'User registered successfully', context: message });
                     } else {
                         res.status(500).json({ ok: false, message: 'Something went wrong', context: message });
                     }
@@ -230,12 +265,20 @@ module.exports.ccavenueInitiate = async (req, res) => {
             billing_name: req.query.name,
             billing_email: req.query.email,
             merchant_param1: req.query.chapter,
+            merchant_param2: req.query?.cartId ?? null,
             billing_tel: req.query.phone
         }),
         keyBase64,
         ivBase64
     );
     res.status(200).json({ result: { encReq, accessCode } });
+};
+
+module.exports.saveDataInRedis = async (req, res) => {
+    const cartId = `cart_${crypto.randomUUID()}`;
+    await client.set(cartId, JSON.stringify(req.body));
+
+    res.status(200).json({ result: cartId });
 };
 
 module.exports.paymentStatus = async (req, res) => {
@@ -260,9 +303,18 @@ module.exports.paymentStatus = async (req, res) => {
     const decryptedData = decrypt(encResp, keyBase64, ivBase64);
     const parsedData = querystring.parse(decryptedData);
 
-    const fronend_url = `${returnUrl()}/thankyou?status=${parsedData.order_status}&email=${parsedData.billing_email}&name=${parsedData.billing_name}`;
+    if (parsedData.order_status === 'Success') {
+        let cart = await client.get(parsedData.merchant_param2);
 
-    res.redirect(302, fronend_url);
+        const frontend_url = `${returnUrl()}/thankyou?status=${parsedData.order_status}`;
+        const _req = { ...req, body: { ...JSON.parse(cart), frontend_url, cartId: parsedData.merchant_param2 } };
+
+        await this.registerUser(_req, res);
+    } else {
+        const fronend_url = `${returnUrl()}/thankyou?status=${parsedData.order_status}&email=${parsedData.billing_email}&name=${parsedData.billing_name}`;
+
+        res.redirect(302, fronend_url);
+    }
 };
 
 module.exports.saveTemporaryUsers = async (req, res) => {
@@ -332,7 +384,7 @@ module.exports.sendSequentialMail = async (req, res) => {
             })
         );
 
-        console.log(await Promise.all(funcArr));
+        // console.log(await Promise.all(funcArr));
         res.status(200).json({ result: true });
     } catch (error) {
         res.status(500).json({ result: false });

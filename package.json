@@ -25,6 +25,7 @@
         "prettier": "^3.0.3",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
+        "redis": "^4.6.11",
         "stripe": "^13.9.0"
     },
     "devDependencies": {
