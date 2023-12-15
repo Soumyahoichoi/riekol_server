@@ -14,7 +14,8 @@ const {
     saveTemporaryUsers,
     getMailingList,
     paymentStatus,
-    sendSequentialMail
+    sendSequentialMail,
+    saveDataInRedis
 } = require('../controllers/user.controller');
 var router = express.Router();
 
@@ -34,5 +35,6 @@ router.post('/saveTemp', saveTemporaryUsers);
 router.get('/getMailingList', getMailingList);
 router.post('/payment_status', paymentStatus);
 router.post('/sendMailManual', sendSequentialMail);
+router.post('/saveDataInRedis', saveDataInRedis);
 
 module.exports = router;
