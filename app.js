@@ -46,6 +46,7 @@ app.use(function (err, req, res, next) {
 
 app.listen(1337, () => {
     console.log(`Server running on http://localhost:1337`);
+    console.log(process.env.NODE_VERSION);
 });
 
 module.exports = app;
