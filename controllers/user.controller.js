@@ -10,7 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const engine = require('express-engine-jsx');
 const { createClient } = require('redis');
-const client = createClient({ url: process.env.NODE_ENV === 'production' ? process.env.REDIS_URL : process.env.EXT_REDIS_URL });
+const client = createClient({ url: process.env.NODE_ENV === 'production' ? process.env.REDIS_URL : null });
 
 client.on('error', (err) => console.log('Redis Client Error', err));
 client.connect().then(() => console.log('Redis Connected'));
@@ -135,77 +135,81 @@ module.exports.getDataFromDatabase = async (req, res, next) => {
 };
 
 module.exports.registerUser = async (req, res) => {
-    const requestBody = structuredClone?.(req.body) || JSON.parse(JSON.stingify(req.body) || '{}');
-    if (requestBody?.ticketDetails) {
-        const { ticketDetails, frontend_url, cartId } = requestBody;
-        try {
-            const response = await supabase.from('purchases').insert(ticketDetails);
-            // const decrement = await supabase.rpc('decrement_seats', {
-            //     event_name: ticketDetails.map((item) => item.name)
-            // });
+    try {
+        const requestBody = structuredClone?.(req.body) || JSON.parse(JSON.stingify(req.body) || '{}');
+        if (requestBody?.ticketDetails) {
+            const { ticketDetails, frontend_url, cartId } = requestBody;
+            try {
+                const response = await supabase.from('purchases').insert(ticketDetails);
+                // const decrement = await supabase.rpc('decrement_seats', {
+                //     event_name: ticketDetails.map((item) => item.name)
+                // });
 
-            const decrement = [];
-            const ticketNames = ticketDetails
-                .map((item) => {
-                    const arr = [];
-                    for (let i = 1; i <= item.count; i++) {
-                        arr.push(item.name);
-                    }
-                    return arr;
-                })
-                .flat();
-            for (const i of ticketNames) {
-                const status_Decr = await supabase.rpc('decrement_seats', {
-                    event_name: [i]
-                });
-                decrement.push(status_Decr.status);
-            }
-            // airtable;
-            if (response?.status === 201 && decrement?.every((item) => item === 204)) {
-                console.log('done supabase');
-                const airtableResponse = await axios.post(
-                    'https://api.airtable.com/v0/app5mepjhCkn9Zojw/supabase_purchase_data',
-                    {
-                        records: [...ticketDetails.map((item) => ({ fields: { ...item } }))]
-                    },
-                    {
-                        headers: {
-                            Authorization: `Bearer patJLEWwnFANu0Mwv.c98aeb79f2e55e6aba4cda25e2411c379679db2e9df7dee3c816e7534ddd7a21`
+                const decrement = [];
+                const ticketNames = ticketDetails
+                    .map((item) => {
+                        const arr = [];
+                        for (let i = 1; i <= item.count; i++) {
+                            arr.push(item.name);
                         }
-                    }
-                );
-                if ('records' in airtableResponse.data) {
-                    console.log('done airtable');
-
-                    const message = await transporter.sendMail({
-                        from: 'info@riekol.com', // sender address
-                        to: `${ticketDetails[0].email}`, // list of receivers
-                        subject: 'Invoice from RIEKOL', // Subject line
-                        html: engine(path.resolve(__dirname + '/../views/example.jsx'), { ticketDetails }).toString()
+                        return arr;
+                    })
+                    .flat();
+                for (const i of ticketNames) {
+                    const status_Decr = await supabase.rpc('decrement_seats', {
+                        event_name: [i]
                     });
-                    if (message) {
-                        console.log('done mail');
-                        try {
-                            const redis_deleted_entry = await client.del([cartId]);
-                            console.log('redis entry deleted', redis_deleted_entry);
-                        } catch (error) {
-                            console.log('in error of mail catch');
-                            console.log(error);
+                    decrement.push(status_Decr.status);
+                }
+                // airtable;
+                if (response?.status === 201 && decrement?.every((item) => item === 204)) {
+                    console.log('done supabase');
+                    const airtableResponse = await axios.post(
+                        'https://api.airtable.com/v0/app5mepjhCkn9Zojw/supabase_purchase_data',
+                        {
+                            records: [...ticketDetails.map((item) => ({ fields: { ...item } }))]
+                        },
+                        {
+                            headers: {
+                                Authorization: `Bearer patJLEWwnFANu0Mwv.c98aeb79f2e55e6aba4cda25e2411c379679db2e9df7dee3c816e7534ddd7a21`
+                            }
                         }
-                        // const fronend_url = `${returnUrl()}/thankyou`;
-                        console.log('fronend url ===> ', frontend_url);
-                        res.redirect(302, frontend_url);
-                        // res.status(200).json({ ok: true, message: 'User registered successfully', context: message });
-                    } else {
-                        res.status(500).json({ ok: false, message: 'Something went wrong', context: message });
+                    );
+                    if ('records' in airtableResponse.data) {
+                        console.log('done airtable');
+
+                        const message = await transporter.sendMail({
+                            from: 'info@riekol.com', // sender address
+                            to: `${ticketDetails[0].email}`, // list of receivers
+                            subject: 'Invoice from RIEKOL', // Subject line
+                            html: engine(path.resolve(__dirname + '/../views/example.jsx'), { ticketDetails }).toString()
+                        });
+                        if (message) {
+                            console.log('done mail');
+                            try {
+                                const redis_deleted_entry = await client.del([cartId]);
+                                console.log('redis entry deleted', redis_deleted_entry);
+                            } catch (error) {
+                                console.log('in error of mail catch');
+                                console.log(error);
+                            }
+                            // const fronend_url = `${returnUrl()}/thankyou`;
+                            console.log('fronend url ===> ', frontend_url);
+                            res.redirect(302, frontend_url);
+                            // res.status(200).json({ ok: true, message: 'User registered successfully', context: message });
+                        } else {
+                            res.status(500).json({ ok: false, message: 'Something went wrong', context: message });
+                        }
                     }
                 }
+            } catch (error) {
+                res.status(500).json({ error: error.stack });
             }
-        } catch (error) {
-            res.status(500).json({ error: error.stack });
+        } else {
+            res.status(400).json({ error: 'Bad Request' });
         }
-    } else {
-        res.status(400).json({ error: 'Bad Request' });
+    } catch (error) {
+        res.status(500).json({ result: 'Internal Server Error', error: error.stack });
     }
 };
 
@@ -240,38 +244,48 @@ module.exports.stats = async (req, res) => {
 };
 
 module.exports.ccavenueInitiate = async (req, res) => {
-    const workingKey = process.env.CCAVENUE_SECRET; //Put in the 32-Bit key shared by CCAvenues.
-    const accessCode = process.env.CCAVENUE_ACCESS_CODE; //Put in the Access Code shared by CCAvenues.
+    try {
+        const workingKey = process.env.CCAVENUE_SECRET; //Put in the 32-Bit key shared by CCAvenues.
+        const accessCode = process.env.CCAVENUE_ACCESS_CODE; //Put in the Access Code shared by CCAvenues.
 
-    //Generate Md5 hash for the key and then convert in base64 string
-    var md5 = crypto.createHash('md5').update(workingKey).digest();
-    var keyBase64 = Buffer.from(md5).toString('base64');
+        //Generate Md5 hash for the key and then convert in base64 string
+        var md5 = crypto.createHash('md5').update(workingKey).digest();
+        var keyBase64 = Buffer.from(md5).toString('base64');
 
-    //Initializing Vector and then convert in base64 string
-    var ivBase64 = Buffer.from([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f]).toString('base64');
+        //Initializing Vector and then convert in base64 string
+        var ivBase64 = Buffer.from([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f]).toString('base64');
 
-    const url = process.env.NODE_ENV === 'production' ? 'https://riekol-server.onrender.com' : 'http://localhost:1337';
-    const order_id = crypto.randomUUID();
-    const encReq = encrypt(
-        querystring.stringify({
-            merchant_id: process.env.CCAVENUE_MERCHANTID,
-            order_id,
-            currency: req.query.currency,
-            amount: +req.query.amount,
-            redirect_url: `${url}/users/payment_status`,
-            cancel_url: `${url}/users/payment_status`,
-            integration_type: 'iframe_normal',
-            language: 'EN',
-            billing_name: req.query.name,
-            billing_email: req.query.email,
-            merchant_param1: req.query.chapter,
-            merchant_param2: req.query?.cartId ?? null,
-            billing_tel: req.query.phone
-        }),
-        keyBase64,
-        ivBase64
-    );
-    res.status(200).json({ result: { encReq, accessCode } });
+        const url = process.env.NODE_ENV === 'production' ? 'https://riekol-server.onrender.com' : 'http://localhost:1337';
+        const order_id = crypto.randomUUID();
+
+        const cart = await client.get(req.query?.cartId);
+
+        const eventNames = JSON.parse(cart)?.ticketDetails?.reduce((acc, item) => item.name + ',' + acc, '');
+
+        const encReq = encrypt(
+            querystring.stringify({
+                merchant_id: process.env.CCAVENUE_MERCHANTID,
+                order_id,
+                currency: req.query.currency,
+                amount: +req.query.amount,
+                redirect_url: `${url}/users/payment_status`,
+                cancel_url: `${url}/users/payment_status`,
+                integration_type: 'iframe_normal',
+                language: 'EN',
+                billing_name: req.query.name,
+                billing_email: req.query.email,
+                merchant_param1: req.query.chapter,
+                merchant_param2: req.query?.cartId ?? null,
+                merchant_param3: eventNames,
+                billing_tel: req.query.phone
+            }),
+            keyBase64,
+            ivBase64
+        );
+        res.status(200).json({ result: { encReq, accessCode } });
+    } catch (error) {
+        res.status(500).json({ result: 'Internal Server Error', error });
+    }
 };
 
 module.exports.saveDataInRedis = async (req, res) => {
